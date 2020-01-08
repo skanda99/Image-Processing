@@ -157,8 +157,8 @@ def conv_2D(img,kernel,stride=1):
 # Function 10
 def blur_img(img,key='small',pad_type='None'):
     """
-        Blurs the passed image. Two options for kernels. Pad_type determines kind of padding
-        to be used to retain original size of the image.
+        Returns blurred version of passed image. Two options for kernels - small, large.
+        Pad_type determines kind of padding to be used to retain original size of the image.
     """
 
     if key == 'small':
@@ -168,3 +168,12 @@ def blur_img(img,key='small',pad_type='None'):
     elif key == 'large':
         kernel = np.ones((21,21),dtype=float) * 1/441.0
         return img_conv_2D(img,kernel,1,pad_type)
+
+
+# Function 11
+def sharp_img(img,pad_type='None'):
+    """
+        Returns sharpened version of passed image. Pad_types - zero_pad, wrap_pad, replicate_pad
+    """
+    kernel = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],dtype=float)
+    return img_conv_2D(img,kernel,1,pad_type)
