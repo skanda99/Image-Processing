@@ -177,3 +177,17 @@ def sharp_img(img,pad_type='None'):
     """
     kernel = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],dtype=float)
     return img_conv_2D(img,kernel,1,pad_type)
+
+
+# Function 12
+def gaussian_blur(img,key='3x3',pad_type='None'):
+
+    if key == '3x3':
+
+        kernel = np.array([[1,2,1],[2,4,2],[1,2,1]],dtype=float) * 1/16.0
+        return img_conv_2D(img,kernel,1,pad_type)
+
+    elif key == '5x5':
+
+        kernel = np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]],dtype=float) * 1/256.0
+        return img_conv_2D(img,kernel,1,pad_type)
