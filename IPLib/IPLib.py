@@ -5,6 +5,22 @@ import numpy as np
 import itertools as it
 import cv2
 
+
+# Attribute 1
+
+""" All the kernels used in the Library. """
+kernel_bank = {
+                'blur_small': np.ones((7,7),dtype=float) * 1/49.0,
+                'blur_large': np.ones((21,21),dtype=float) * 1/441.0,
+                'laplacian_1': np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],dtype=float),
+                'gaussian_3x3': np.array([[1,2,1],[2,4,2],[1,2,1]],dtype=float) * 1/16.0,
+                'gaussian_5x5': np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]],dtype=float) * 1/256.0,
+                'edge_small': np.array([[1,0,-1],[0,0,0],[-1,0,1]],dtype=float),
+                'edge_medium': np.array([[0,1,0],[1,-4,1],[0,1,0]],dtype=float),
+                'edge_large': np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],dtype=float)
+                }
+
+
 # Function 1
 def color2gray (img,w_r=0.2989,w_g=0.5870,w_b=0.1140):
     """
@@ -175,12 +191,17 @@ def sharp_img(img,pad_type='None'):
     """
         Returns sharpened version of passed image. Pad_types - zero_pad, wrap_pad, replicate_pad
     """
+
     kernel = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],dtype=float)
     return img_conv_2D(img,kernel,1,pad_type)
 
 
 # Function 12
 def gaussian_blur(img,key='3x3',pad_type='None'):
+    """
+        Returns blurred version of passed image. Gaussian kernel is used for blurring.
+        Two gaussian kernels are present - 3x3, 5x5
+    """
 
     if key == '3x3':
 
@@ -190,4 +211,27 @@ def gaussian_blur(img,key='3x3',pad_type='None'):
     elif key == '5x5':
 
         kernel = np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]],dtype=float) * 1/256.0
+        return img_conv_2D(img,kernel,1,pad_type)
+
+
+# Function 13
+def detect_edge(img,key='small',pad_type='None'):
+    """
+        Returns edge detected version of passed image. Three kernels are available - small,
+        medium, large.
+    """
+
+    if key == 'small':
+
+        kernel = np.array([[1,0,-1],[0,0,0],[-1,0,1]],dtype=float)
+        return img_conv_2D(img,kernel,1,pad_type)
+
+    elif key == 'medium':
+
+        kernel = np.array([[0,1,0],[1,-4,1],[0,1,0]],dtype=float)
+        return img_conv_2D(img,kernel,1,pad_type)
+
+    elif key == 'large':
+
+        kernel = np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],dtype=float)
         return img_conv_2D(img,kernel,1,pad_type)
