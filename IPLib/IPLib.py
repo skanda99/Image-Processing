@@ -17,7 +17,8 @@ kernel_bank = {
                 'gaussian_5x5': np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]],dtype=float) * 1/256.0,
                 'edge_small': np.array([[1,0,-1],[0,0,0],[-1,0,1]],dtype=float),
                 'edge_medium': np.array([[0,1,0],[1,-4,1],[0,1,0]],dtype=float),
-                'edge_large': np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],dtype=float)
+                'edge_large': np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],dtype=float),
+                'laplacian_2': np.array([[1,1,1],[1,-6,1],[1,1,1]],dtype=float) * 1/1.0
                 }
 
 
@@ -235,3 +236,33 @@ def detect_edge(img,key='small',pad_type='None'):
 
         kernel = np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],dtype=float)
         return img_conv_2D(img,kernel,1,pad_type)
+
+
+# Funtion 14
+def threshold_segment(img):
+    """
+        Returns a segmented image. Based on thresholding technique.
+        Thresholds can be changed for better segmentation.
+    """
+
+    m,n = img.shape
+    g = img.sum()/(m*n)
+
+    segmented = np.zeros((m,n),dtype=float)
+
+    for i,j in it.product(range(m),range(n)):
+
+        if img[i,j] - g >= 100:
+            segmented[i,j] = 0
+        elif img[i,j] - g >= 50:
+            segmented[i,j] = 50
+        elif img[i,j] - g >= 0:
+            segmented[i,j] = 100
+        elif img[i,j] - g >= -50:
+            segmented[i,j] = 150
+        elif img[i,j] - g >= -100:
+            segmented[i,j] = 200
+        else:
+            segmented[i,j] = 255
+
+    return segmented
