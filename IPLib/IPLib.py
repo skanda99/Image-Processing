@@ -111,6 +111,7 @@ def img_save(name,img):
 
 
 # Function 8
+# yet to add support for stride
 def img_conv_2D(img,kernel,stride=1,pad_type='None'):
     """
         Returns image obtained by 2D-Convolution between img and kernel with stride(defaulted to 1).
@@ -238,7 +239,7 @@ def detect_edge(img,key='small',pad_type='None'):
         return img_conv_2D(img,kernel,1,pad_type)
 
 
-# Funtion 14
+# Function 14
 def threshold_segment(img):
     """
         Returns a segmented image. Based on thresholding technique.
@@ -266,3 +267,32 @@ def threshold_segment(img):
             segmented[i,j] = 255
 
     return segmented
+
+
+# Function 15
+def zoom_pxl_replication(img,z_f=1):
+    """
+        Returns a new zoomed image with zoom factor = z_f.
+        Input image can be colored or gray scale.
+    """
+
+    try:
+        m,n = img.shape
+
+        new_img = np.zeros((z_f*m,z_f*n),dtype=int)
+
+        for i,j in it.product(range(m),range(n)):
+            new_img[z_f*i:z_f*i+z_f,z_f*j:z_f*j+z_f] = np.ones((z_f,z_f),dtype=int) * img[i,j]
+
+
+    except:
+        m,n,_ = img.shape
+
+        new_img = np.zeros((z_f*m,z_f*n,3),dtype=int)
+
+        for i,j in it.product(range(m),range(n)):
+            new_img[z_f*i:z_f*i+z_f,z_f*j:z_f*j+z_f,0] = np.ones((z_f,z_f),dtype=int) * img[i,j,0]
+            new_img[z_f*i:z_f*i+z_f,z_f*j:z_f*j+z_f,1] = np.ones((z_f,z_f),dtype=int) * img[i,j,1]
+            new_img[z_f*i:z_f*i+z_f,z_f*j:z_f*j+z_f,2] = np.ones((z_f,z_f),dtype=int) * img[i,j,2]
+
+    return new_img
