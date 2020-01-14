@@ -273,7 +273,7 @@ def threshold_segment(img):
 def zoom_pxl_replication(img,z_f=1):
     """
         Returns a new zoomed image with zoom factor = z_f.
-        Input image can be colored or gray scale.
+        Input image can be colored or grayscale.
     """
 
     try:
@@ -296,3 +296,52 @@ def zoom_pxl_replication(img,z_f=1):
             new_img[z_f*i:z_f*i+z_f,z_f*j:z_f*j+z_f,2] = np.ones((z_f,z_f),dtype=int) * img[i,j,2]
 
     return new_img
+
+
+# Function 16
+def zoom_zero_order(img):
+    """
+        Returns a zoomed image using zero order method.
+        Input image can be colored or grayscale.
+    """
+
+    try:
+        m,n = img.shape
+
+        tmp1 = np.zeros((m,2*n-1),dtype=float)
+
+        for i in range(n):
+            tmp1[:,2*i] = np.copy(img[:,i])
+
+        for i in range(1,2*n-1,2):
+            tmp1[:,i] = (tmp1[:,i-1]+tmp1[:,i+1])/2
+
+        tmp2 = np.zeros((2*m-1,2*n-1),dtype=float)
+
+        for j in range(m):
+            tmp2[2*j,:] = np.copy(tmp1[j,:])
+
+        for j in range(1,2*m-1,2):
+            tmp2[j,:] = (tmp2[j-1,:]+tmp2[j+1,:])/2
+
+    except:
+        m,n,_ = img.shape
+
+        tmp1 = np.zeros((m,2*n-1,3),dtype=float)
+
+        for i in range(n):
+            tmp1[:,2*i,:] = np.copy(img[:,i,:])
+
+        for i in range(1,2*n-1,2):
+            tmp1[:,i,:] = (tmp1[:,i-1,:]+tmp1[:,i+1,:])/2
+
+        tmp2 = np.zeros((2*m-1,2*n-1,3),dtype=float)
+
+        for j in range(m):
+            tmp2[2*j,:,:] = np.copy(tmp1[j,:,:])
+
+        for j in range(1,2*m-1,2):
+            tmp2[j,:,:] = (tmp2[j-1,:,:]+tmp2[j+1,:,:])/2
+
+
+    return tmp2
