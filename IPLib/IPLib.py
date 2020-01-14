@@ -5,6 +5,7 @@ import numpy as np
 import itertools as it
 import cv2
 import fractions as fr
+import matplotlib.pyplot as plt
 
 
 # Attribute 1
@@ -397,3 +398,66 @@ def aspect_ratio(img):
     a_r = fr.Fraction(n,m)
 
     return str(a_r)
+
+
+# Function 19
+def img_contrast(img):
+    """
+        Returns the contrast of input grayscale image.
+    """
+
+    return img.max()-img.min()
+
+
+
+# Function 20
+def change_brightness(img,k=0):
+    """
+        Returns an image with changed brightness.
+    """
+
+    img_copy = np.copy(img)
+    img_copy = img_copy.astype(int)
+    img_copy += k
+
+    return img_copy
+
+
+# Function 20
+def img_histogram(img):
+    """
+        Draws histogram of image pixel values.
+        Images can be grayscale or color.
+    """
+
+    if len(img.shape) > 2:
+
+        plt.subplot(3,1,1)
+        plt.hist(img[:,:,0].ravel(),bins=range(257),color='b')
+        plt.title('Image Histogram')
+        plt.legend('Blue')
+        plt.xlabel('Pixel Values')
+        plt.ylabel('Frequency')
+
+        plt.subplot(3,1,2)
+        plt.hist(img[:,:,1].ravel(),bins=range(257),color='g')
+        plt.legend('Green')
+        plt.xlabel('Pixel Values')
+        plt.ylabel('Frequency')
+
+        plt.subplot(3,1,3)
+        plt.hist(img[:,:,2].ravel(),bins=range(257),color='r')
+        plt.legend('Red')
+        plt.xlabel('Pixel Values')
+        plt.ylabel('Frequency')
+
+        plt.show()
+
+    else:
+
+        plt.hist(img[:,:].ravel(),bins=range(257))
+        plt.title('Image Histogram - Grayscale')
+        plt.xlabel('Pixel Values')
+        plt.ylabel('Frequency')
+
+        plt.show()
