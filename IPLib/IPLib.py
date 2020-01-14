@@ -4,6 +4,7 @@
 import numpy as np
 import itertools as it
 import cv2
+import fractions as fr
 
 
 # Attribute 1
@@ -384,3 +385,15 @@ def zoom_k(img,k=1):
 
 
     return tmp2
+
+
+# Function 18
+def aspect_ratio(img):
+    """
+        Returns aspect ratio in string format for grayscale images.
+    """
+
+    m,n = img.shape
+    a_r = fr.Fraction(n,m)
+
+    return str(a_r)
