@@ -345,3 +345,42 @@ def zoom_zero_order(img):
 
 
     return tmp2
+
+
+# Function 17
+def zoom_k(img,k=1):
+    """
+        Returns k-times zoomed image.
+        Input image can be colored or grayscale.
+    """
+
+    try:
+
+        m,n = img.shape
+
+        tmp1 = np.zeros((m,n*k-k+1),dtype=float)
+
+        for i in range(n-1):
+            tmp1[:,k*i:k*i+k+1] = np.linspace(img[:,i],img[:,i+1],k+1,axis=1)
+
+        tmp2 = np.zeros((m*k-k+1,n*k-k+1),dtype=float)
+
+        for j in range(m-1):
+            tmp2[k*j:k*j+k+1,:] = np.linspace(tmp1[j,:],tmp1[j+1,:],k+1,axis=0)
+
+    except:
+
+        m,n,_ = img.shape
+
+        tmp1 = np.zeros((m,n*k-k+1,3),dtype=float)
+
+        for i in range(n-1):
+            tmp1[:,k*i:k*i+k+1,:] = np.linspace(img[:,i,:],img[:,i+1,:],k+1,axis=1)
+
+        tmp2 = np.zeros((m*k-k+1,n*k-k+1,3),dtype=float)
+
+        for j in range(m-1):
+            tmp2[k*j:k*j+k+1,:,:] = np.linspace(tmp1[j,:,:],tmp1[j+1,:,:],k+1,axis=0)
+
+
+    return tmp2
