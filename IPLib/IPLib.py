@@ -6,6 +6,7 @@ import itertools as it
 import cv2
 import fractions as fr
 import matplotlib.pyplot as plt
+import random
 
 
 # Attribute 1
@@ -461,3 +462,37 @@ def img_histogram(img):
         plt.ylabel('Frequency')
 
         plt.show()
+
+
+# Function 21
+def dither_img(img,num_pxl,bw_threshold=128):
+    """
+        First performs binary thresholing on gray scale image, then dithering and return dithered image.
+    """
+
+    img_copy = np.copy(img)
+    img_copy[img_copy >= bw_threshold] = 255
+    img_copy[img_copy < bw_threshold] = 0
+
+    h = img_copy.shape[0]
+    w = img_copy.shape[1]
+
+    coordinates_0 = np.where(img_copy == 0)
+    coordinates_0 = tuple(zip(coordinates_0[0],coordinates_0[1]))
+
+    coordinates_255 = np.where(img_copy == 255)
+    coordinates_255 = tuple(zip(coordinates_255[0],coordinates_255[1]))
+
+    if num_pxl == 0:
+        return img_copy
+
+    selected_coordinates_0 = random.sample(coordinates_0,min(num_pxl,min(len(coordinates_0),len(coordinates_255))))
+    selected_coordinates_255 = random.sample(coordinates_255,min(num_pxl,min(len(coordinates_0),len(coordinates_255))))
+
+    selected_coordinates_0 = tuple(zip(*selected_coordinates_0))
+    selected_coordinates_255 = tuple(zip(*selected_coordinates_255))
+
+    img_copy[selected_coordinates_0[0],selected_coordinates_0[1]] = 255
+    img_copy[selected_coordinates_255[0],selected_coordinates_255[1]] = 0
+
+    return img_copy
