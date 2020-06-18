@@ -613,3 +613,140 @@ def gamma_transform(img,scale_factor=1,gamma=2.5):
     img_copy = scale_factor * img_copy ** (1/gamma)
 
     return img_copy
+
+
+# Function 30
+def gaussian_filter(size,sigma=-1):
+    """
+        returns approximate gaussian filter for given size and sigma with mean 0.
+        if sigma is -1, then sigma is automatically set to sqrt(size)
+    """
+
+    if sigma == -1:
+        sigma = np.sqrt(size)
+
+    filter = np.zeros((size,size))
+
+    for i,j in it.product(range(size),range(size)):
+         x = j-size//2
+         y = i-size//2
+         filter[i,j] = 1/(2*np.pi*sigma**2) * np.exp(-(x**2+y**2)/(2*sigma**2))
+
+    filter = filter/filter[0,0]
+    filter = filter/filter.sum()
+
+    return filter
+
+
+# Function 31
+def non_max_suppression_canny(gradient,direction):
+    """
+        Applies non-max suppression on image gradients to remove repeating pixels.
+        Returns new image with suppressed gradients.
+    """
+
+    m,n = gradient.shape
+    new_img = np.zeros((m,n))
+    PI = np.pi
+
+    for i,j in it.product(range(1,m-1),range(1,n-1)):
+
+        if (direction[i,j] < PI/8 and direction[i,j] >= 15*PI/8) or (direction[i,j] < 9*PI/8 and direction[i,j] >= 7*PI/8):
+            adj1_mag = gradient[i,j-1]
+            adj2_mag = gradient[i,j+1]
+
+        elif (direction[i,j] < 3*PI/8 and direction[i,j] >= PI/8) or (direction[i,j] < 11*PI/8 and direction[i,j] >= 9*PI/8):
+            adj1_mag = gradient[i-1,j+1]
+            adj2_mag = gradient[i+1,j-1]
+
+        elif (direction[i,j] < 5*PI/8 and direction[i,j] >= 3*PI/8) or (direction[i,j] < 13*PI/8 and direction[i,j] >= 11*PI/8):
+            adj1_mag = gradient[i-1,j]
+            adj2_mag = gradient[i+1,j]
+
+        else:
+            adj1_mag = gradient[i-1,j-1]
+            adj2_mag = gradient[i+1,j+1]
+
+
+        if gradient[i,j] >= adj1_mag and gradient[i,j] >= adj2_mag:
+            new_img[i,j] = gradient[i,j]
+
+    return new_img
+
+
+# Function 32
+def dfs_canny(i,j,img,vis,weak,m,n):
+    """
+        Performs DFS on image to check if weak pixels are connected to strong pixels.
+        Part of hysterisis canny. Returns changed image.
+    """
+    if i >= 0 and i < m and j >= 0 and j < n and vis[i][j] == False and img[i,j] != 0:
+
+        if img[i,j] == weak:
+            img[i,j] = 255
+
+        vis[i][j] = True
+
+        dfs_canny(i,j-1,img,vis,weak,m,n)
+        dfs_canny(i,j+1,img,vis,weak,m,n)
+        dfs_canny(i-1,j,img,vis,weak,m,n)
+        dfs_canny(i+1,j,img,vis,weak,m,n)
+        dfs_canny(i-1,j-1,img,vis,weak,m,n)
+        dfs_canny(i-1,j+1,img,vis,weak,m,n)
+        dfs_canny(i+1,j-1,img,vis,weak,m,n)
+        dfs_canny(i+1,j+1,img,vis,weak,m,n)
+
+
+# Function 33
+def hysterisis_canny(img,weak):
+    """
+        Performs hysterisis to decide if weak pixels are part of edges or not.
+    """
+
+    m,n = img.shape
+    img_copy = np.copy(img)
+    vis = [[False for j in range(n)] for i in range(m)]
+
+    for i,j in it.product(range(m),range(n)):
+        if img_copy[i,j] == 255:
+            dfs_canny(i,j,img_copy,vis,weak,m,n)
+
+    img_copy[img_copy < 255] = 0
+
+    return img_copy
+
+
+# Function 34
+def canny_edge_detection(img,weak=50,high=70,low=30,kernel_size=7):
+    """
+        Performs canny edge detection. Processes followed:
+            1. Reducing noise using gaussian filter
+            2. Identify gradient magnitude and direction in image using sobel kernel
+            3. Non-Max suppression to identify repeating edges
+            4. Thresholding to identify strong and weak pixels
+            5. Hysterisis to convert relevant weak pixels to strong
+
+        Returns image with detected edges.
+    """
+
+    img_copy = np.copy(img)
+    gauss_kernel = gaussian_filter(kernel_size)
+
+    img_copy = img_conv_2D(img_copy,gauss_kernel,1,'zero_pad')
+
+    img_horizontal = detect_edge(img_copy,'sobel_horizontal')
+    img_vertical = detect_edge(img_copy,'sobel_vertical')
+
+    img_gradient_mag = np.sqrt(img_horizontal**2 + img_vertical**2)
+    img_gradient_mag = img_gradient_mag * 255/img_gradient_mag.max()
+    img_gradient_dir = np.arctan2(img_vertical,img_horizontal) + np.pi
+
+    img_new = non_max_suppression_canny(img_gradient_mag,img_gradient_dir)
+
+    img_new[img_new >= high] = 255
+    img_new[np.logical_and(img_new < high,img_new >= low)] = weak
+    img_new[img_new < low] = 0
+
+    img_new = hysterisis_canny(img_new,weak)
+
+    return img_new
