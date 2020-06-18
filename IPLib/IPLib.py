@@ -739,7 +739,7 @@ def canny_edge_detection(img,weak=50,high=70,low=30,kernel_size=7):
 
     img_gradient_mag = np.sqrt(img_horizontal**2 + img_vertical**2)
     img_gradient_mag = img_gradient_mag * 255/img_gradient_mag.max()
-    img_gradient_dir = np.arctan2(img_vertical,img_horizontal) + np.pi
+    img_gradient_dir = np.arctan2(img_horizontal,img_vertical) + np.pi
 
     img_new = non_max_suppression_canny(img_gradient_mag,img_gradient_dir)
 
