@@ -571,3 +571,62 @@ def histogram_equalization(img):
 
     else:
         return histogram_equalize(img)
+
+
+# Function 25
+def linear_transform(img):
+    """
+        Supports grayscale images only. y = f(x) = x
+    """
+
+    img_copy = np.copy(img)
+    return img_copy
+
+
+# Function 26
+def negative_transform(img):
+    """
+        Supports only grayscale images. y = f(x) = 255-x
+    """
+
+    img_copy = np.copy(img)
+    img_copy = 255 - img_copy
+
+    return img_copy
+
+
+# Function 27
+def log_transform(img,scale_factor=1):
+    """
+        Supports only grayscale images. y = f(x) = scale_factor * log(x + 1)
+    """
+
+    img_copy = np.copy(img)
+    img_copy = scale_factor * np.log(img_copy+1)
+
+    return img_copy
+
+
+# Function 28
+def inverse_log_transform(img,scale_factor=1):
+    """
+        Supports only grayscale images. y = f(x) = scale_factor * exp(x)
+    """
+
+    img_copy = np.copy(img)
+    img_copy = scale_factor * np.exp(img_copy)
+
+    return img_copy
+
+
+# Function 29
+def gamma_transform(img,scale_factor=1,gamma=2.5):
+    """
+        Supports only for grayscale images. y = f(x) = scale_factor * x ^ (1/gamma)
+        Also known as power transformation.
+    """
+
+    img_copy = np.copy(img)
+    img_copy = scale_factor * img_copy ** (1/gamma)
+
+    return img_copy
