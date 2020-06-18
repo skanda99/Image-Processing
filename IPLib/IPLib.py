@@ -15,13 +15,18 @@ import random
 kernel_bank = {
                 'blur_small': np.ones((7,7),dtype=float) * 1/49.0,
                 'blur_large': np.ones((21,21),dtype=float) * 1/441.0,
-                'laplacian_1': np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],dtype=float),
+                'blur_weight': np.array([[1,1,1],[1,10,1],[1,1,1]],dtype=float) * 1/18.0,
                 'gaussian_3x3': np.array([[1,2,1],[2,4,2],[1,2,1]],dtype=float) * 1/16.0,
                 'gaussian_5x5': np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]],dtype=float) * 1/256.0,
-                'edge_small': np.array([[1,0,-1],[0,0,0],[-1,0,1]],dtype=float),
-                'edge_medium': np.array([[0,1,0],[1,-4,1],[0,1,0]],dtype=float),
-                'edge_large': np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],dtype=float),
-                'laplacian_2': np.array([[1,1,1],[1,-6,1],[1,1,1]],dtype=float) * 1/1.0
+                'edge_default': np.array([[1,0,-1],[0,0,0],[-1,0,1]],dtype=float),
+                'positive_laplacian': np.array([[0,1,0],[1,-4,1],[0,1,0]],dtype=float),
+                'negative_laplacian': np.array([[0,-1,0],[-1,4,-1],[0,-1,0]],dtype=float),
+                'laplacian_2': np.array([[1,1,1],[1,-6,1],[1,1,1]],dtype=float) * 1/1.0,
+                'prewitt_horizontal': np.array([[-1,-1,-1],[0,0,0],[1,1,1]],dtype=float),
+                'prewitt_vertical': np.array([[-1,0,1],[-1,0,1],[-1,0,1]],dtype=float),
+                'sobel_horizontal': np.array([[-1,-2,-1],[0,0,0],[1,2,1]],dtype=float),
+                'sobel_vertical': np.array([[-1,0,1],[-2,0,2],[-1,0,1]],dtype=float),
+                'sharp': np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],dtype=float)
                 }
 
 
@@ -167,6 +172,9 @@ def conv_2D(img,kernel,stride=1):
     m,n = img.shape
     r,c = kernel.shape
 
+    kernel = np.flip(kernel,axis=1)
+    kernel = np.flip(kernel,axis=0)
+
     img_conv = np.zeros((m-r+1,n-c+1),dtype=float)
 
     for i,j in it.product(range(m-r+1),range(n-c+1)):
@@ -176,71 +184,46 @@ def conv_2D(img,kernel,stride=1):
 
 
 # Function 10
-def blur_img(img,key='small',pad_type='None'):
+def blur_img(img,key='blur_small',pad_type='None'):
     """
-        Returns blurred version of passed image. Two options for kernels - small, large.
+        Returns blurred version of passed image. Three options for kernels - small, large, weighted.
         Pad_type determines kind of padding to be used to retain original size of the image.
     """
 
-    if key == 'small':
-        kernel = np.ones((7,7),dtype=float) * 1/49.0
-        return img_conv_2D(img,kernel,1,pad_type)
-
-    elif key == 'large':
-        kernel = np.ones((21,21),dtype=float) * 1/441.0
-        return img_conv_2D(img,kernel,1,pad_type)
+    kernel = kernel_bank[key]
+    return img_conv_2D(img,kernel,1,pad_type)
 
 
 # Function 11
 def sharp_img(img,pad_type='None'):
     """
-        Returns sharpened version of passed image. Pad_types - zero_pad, wrap_pad, replicate_pad
+        Returns sharpened version of passed image using laplacian kernel. Pad_types - zero_pad, wrap_pad, replicate_pad
     """
 
-    kernel = np.array([[0,-1,0],[-1,5,-1],[0,-1,0]],dtype=float)
+    kernel = kernel_bank['sharp']
     return img_conv_2D(img,kernel,1,pad_type)
 
 
 # Function 12
-def gaussian_blur(img,key='3x3',pad_type='None'):
+def gaussian_blur(img,key='gaussian_3x3',pad_type='None'):
     """
         Returns blurred version of passed image. Gaussian kernel is used for blurring.
         Two gaussian kernels are present - 3x3, 5x5
     """
 
-    if key == '3x3':
-
-        kernel = np.array([[1,2,1],[2,4,2],[1,2,1]],dtype=float) * 1/16.0
-        return img_conv_2D(img,kernel,1,pad_type)
-
-    elif key == '5x5':
-
-        kernel = np.array([[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]],dtype=float) * 1/256.0
-        return img_conv_2D(img,kernel,1,pad_type)
+    kernel = kernel_bank[key]
+    return img_conv_2D(img,kernel,1,pad_type)
 
 
 # Function 13
-def detect_edge(img,key='small',pad_type='None'):
+def detect_edge(img,key='edge_default',pad_type='None'):
     """
-        Returns edge detected version of passed image. Three kernels are available - small,
-        medium, large.
+        Returns edge detected version of passed image. Kernels available - default,
+        laplacian(positive, negative), prewitt (horizontal, vertical), sobel(horizontal,vertical).
     """
 
-    if key == 'small':
-
-        kernel = np.array([[1,0,-1],[0,0,0],[-1,0,1]],dtype=float)
-        return img_conv_2D(img,kernel,1,pad_type)
-
-    elif key == 'medium':
-
-        kernel = np.array([[0,1,0],[1,-4,1],[0,1,0]],dtype=float)
-        return img_conv_2D(img,kernel,1,pad_type)
-
-    elif key == 'large':
-
-        kernel = np.array([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],dtype=float)
-        return img_conv_2D(img,kernel,1,pad_type)
-
+    kernel = kernel_bank[key]
+    return img_conv_2D(img,kernel,1,pad_type)
 
 # Function 14
 def threshold_segment(img):
