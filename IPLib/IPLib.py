@@ -496,3 +496,23 @@ def dither_img(img,num_pxl,bw_threshold=128):
     img_copy[selected_coordinates_255[0],selected_coordinates_255[1]] = 0
 
     return img_copy
+
+
+# Function 22
+def increase_contrast(img):
+    """
+        Increases contrast of image by proportionally increasing pixel values.
+        Also known as histogram stretching.
+    """
+
+    img_copy = np.copy(img)
+
+    img_min = img_copy.min()
+    img_max = img_copy.max()
+
+    if img_min == img_max:
+        return None
+
+    img_copy = (img_copy-img_min)/(img_max-img_min) * 255
+
+    return img_copy
