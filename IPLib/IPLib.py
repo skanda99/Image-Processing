@@ -431,6 +431,8 @@ def img_histogram(img):
         Images can be grayscale or color.
     """
 
+    plt.figure()
+
     if len(img.shape) > 2:
 
         plt.subplot(3,1,1)
@@ -499,7 +501,7 @@ def dither_img(img,num_pxl,bw_threshold=128):
 
 
 # Function 22
-def increase_contrast(img):
+def histogram_stretching(img):
     """
         Increases contrast of image by proportionally increasing pixel values.
         Also known as histogram stretching.
@@ -516,3 +518,56 @@ def increase_contrast(img):
     img_copy = (img_copy-img_min)/(img_max-img_min) * 255
 
     return img_copy
+
+
+# Function 23
+def histogram_equalize(img):
+    """
+        Performs histogram equalization, can increase or decrease contrast.
+        Returns new image with changed pixel values.
+    """
+
+    img_copy = np.copy(img)
+
+    elements,counts = np.unique(img_copy,return_counts=True)
+    pdf = counts/counts.sum()
+    cdf = np.cumsum(pdf)
+    new_values = cdf * 255
+
+    old_new_map = dict(zip(elements,new_values))
+
+    img_new = np.zeros(img_copy.shape)
+    for i in old_new_map:
+        img_new[img_copy == i] = old_new_map[i]
+
+    return img_new
+
+
+# Function 24
+def histogram_equalization(img):
+    """
+        Handles histogram equalization for both RGB and gray scale images.
+    """
+
+    if len(img.shape) == 3:
+        img_copy = np.copy(img)
+
+        blue = img_copy[:,:,0]
+        blue = histogram_equalize(blue)
+
+        green = img_copy[:,:,1]
+        green = histogram_equalize(green)
+
+        red = img_copy[:,:,2]
+        red = histogram_equalize(red)
+
+        new_img = np.zeros(img_copy.shape)
+
+        new_img[:,:,0] = blue
+        new_img[:,:,1] = green
+        new_img[:,:,2] = red
+
+        return new_img
+
+    else:
+        return histogram_equalize(img)
