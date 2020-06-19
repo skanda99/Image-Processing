@@ -42,6 +42,7 @@ def color2gray (img,w_r=0.2989,w_g=0.5870,w_b=0.1140):
     for i,j in it.product(range(gray.shape[0]),range(gray.shape[1])):
         gray[i,j] = (w_b*img[i,j][0] + w_g*img[i,j][1] + w_r*img[i,j][2])
 
+    gray = np.round(gray,0)
     return gray
 
 
@@ -750,3 +751,68 @@ def canny_edge_detection(img,weak=50,high=70,low=30,kernel_size=7):
     img_new = hysterisis_canny(img_new,weak)
 
     return img_new
+
+
+# Function 35
+def get_seed_points(img,seed_values):
+    """
+        returns list of coordinates which have required seed values.
+    """
+
+    m,n = img.shape
+    coordinates = [(i,j) for i,j in it.product(range(m),range(n)) if img[i,j] in seed_values]
+
+    return coordinates
+
+
+# Function 36
+def sgr_segmentation(img,seed_values,error_threshold=5):
+    """
+        Performs seeded growing regions segmentation. Supply seed values using
+        image histogram. Accordingly adjust error_threshold. Supports only gray-scale images.
+    """
+
+    img_copy = np.copy(img)
+
+    m,n = img_copy.shape
+
+    seed_points = get_seed_points(img_copy,seed_values)
+
+    vis = [[False for j in range(n)] for i in range(m)]
+
+    for i,j in seed_points:
+        if vis[i][j] == False:
+            dfs_sgr_segmentation(i,j,img_copy,vis,error_threshold,m,n)
+
+    for i,j in it.product(range(m),range(n)):
+        if img_copy[i,j] not in seed_values:
+            img_copy[i,j] = 0
+
+    return img_copy
+
+
+# Function 37
+def dfs_sgr_segmentation(i,j,img,vis,error_threshold,m,n):
+    """
+        Performs DFS to find connected pixels using condition abs(p1-p2) <= threshold
+    """
+
+    if vis[i][j] == False:
+
+        vis[i][j] = True
+
+        if i-1 >= 0 and np.abs(img[i,j]-img[i-1,j]) <= error_threshold and vis[i-1][j] == False:
+            img[i-1,j] = img[i,j]
+            dfs_sgr_segmentation(i-1,j,img,vis,error_threshold,m,n)
+
+        if i+1 < m and np.abs(img[i,j]-img[i+1,j]) <= error_threshold and vis[i+1][j] == False:
+            img[i+1,j] = img[i,j]
+            dfs_sgr_segmentation(i+1,j,img,vis,error_threshold,m,n)
+
+        if j-1 >= 0 and np.abs(img[i,j]-img[i,j-1]) <= error_threshold and vis[i][j-1] == False:
+            img[i,j-1] = img[i,j]
+            dfs_sgr_segmentation(i,j-1,img,vis,error_threshold,m,n)
+
+        if j+1 < n and np.abs(img[i,j]-img[i,j+1]) <= error_threshold and vis[i][j+1] == False:
+            img[i,j+1] = img[i,j]
+            dfs_sgr_segmentation(i,j+1,img,vis,error_threshold,m,n)
