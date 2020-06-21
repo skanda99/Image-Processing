@@ -438,6 +438,7 @@ def img_histogram(img):
         plt.xlabel('Pixel Values')
         plt.ylabel('Frequency')
 
+        plt.ion()
         plt.show()
 
     else:
@@ -447,6 +448,7 @@ def img_histogram(img):
         plt.xlabel('Pixel Values')
         plt.ylabel('Frequency')
 
+        plt.ion()
         plt.show()
 
 
