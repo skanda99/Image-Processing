@@ -37,11 +37,7 @@ def color2gray (img,w_r=0.2989,w_g=0.5870,w_b=0.1140):
         standard formula. Returned image has pixel values in the range [0,255].
     """
 
-    gray = np.empty((img.shape[0],img.shape[1]),dtype=float)
-
-    for i,j in it.product(range(gray.shape[0]),range(gray.shape[1])):
-        gray[i,j] = (w_b*img[i,j][0] + w_g*img[i,j][1] + w_r*img[i,j][2])
-
+    gray = w_b*img[:,:,0] + w_g*img[:,:,1] + w_r*img[:,:,2]
     gray = np.round(gray,0)
     return gray
 
