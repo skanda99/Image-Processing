@@ -102,7 +102,7 @@ def img_disp(name,img):
         Displays passed image in a window with the title as passed.
         Image should have pixel values within [0,255]
     """
-    cv2.imshow(name,img/255.0)
+    cv2.imshow(name,img.astype(int)/255.0)
     cv2.waitKey()
 
 
@@ -116,7 +116,6 @@ def img_save(name,img):
 
 
 # Function 8
-# yet to add support for stride
 def img_conv_2D(img,kernel,stride=1,pad_type='None'):
     """
         Returns image obtained by 2D-Convolution between img and kernel with stride(defaulted to 1).
@@ -128,7 +127,10 @@ def img_conv_2D(img,kernel,stride=1,pad_type='None'):
     m,n = img.shape
     r,c = kernel.shape
 
-    img_pad = np.zeros((m+r-1,n+c-1),dtype=float)
+    pad_m = m * (stride-1) + r -1
+    pad_n = n * (stride-1) + r -1
+
+    img_pad = np.zeros((m+pad_m,n+pad_n),dtype=float)
     img_pad[:m,:n] = np.copy(img)
 
     if pad_type == 'zero_pad':
@@ -136,20 +138,20 @@ def img_conv_2D(img,kernel,stride=1,pad_type='None'):
 
     elif pad_type == 'replicate_pad':
 
-        for i in range(m,m+r-1):
+        for i in range(m,m+pad_m):
             img_pad[i,:] = np.copy(img_pad[m-1,:])
 
-        for j in range(n,n+c-1):
+        for j in range(n,n+pad_n):
             img_pad[:,j] = np.copy(img_pad[:,n-1])
 
         return conv_2D(img_pad,kernel,stride)       # define
 
     elif pad_type == 'wrap_pad':
 
-        for i in range(m,m+r-1):
+        for i in range(m,m+pad_m):
             img_pad[i,:] = np.copy(img_pad[i-m,:])
 
-        for j in range(n,n+c-1):
+        for j in range(n,n+pad_n):
             img_pad[:,j] = np.copy(img_pad[:,j-n])
 
         return conv_2D(img_pad,kernel,stride)       # define
@@ -172,55 +174,57 @@ def conv_2D(img,kernel,stride=1):
     kernel = np.flip(kernel,axis=1)
     kernel = np.flip(kernel,axis=0)
 
-    img_conv = np.zeros((m-r+1,n-c+1),dtype=float)
+    c_m, c_n = int(np.ceil((m-r+1)/stride)), int(np.ceil((n-c+1)/stride))
+    img_conv = np.zeros((c_m,c_n),dtype=float)
 
-    for i,j in it.product(range(m-r+1),range(n-c+1)):
-        img_conv[i,j] = (img[i:i+r,j:j+c] * kernel).sum()
+    for i,j in it.product(range(c_m),range(c_n)):
+        img_conv[i,j] = (img[i*stride:i*stride+r,j*stride:j*stride+c] * kernel).sum()
 
     return img_conv
 
 
 # Function 10
-def blur_img(img,key='blur_small',pad_type='None'):
+def blur_img(img,key='blur_small',stride=1,pad_type='None'):
     """
         Returns blurred version of passed image. Three options for kernels - small, large, weighted.
         Pad_type determines kind of padding to be used to retain original size of the image.
     """
 
     kernel = kernel_bank[key]
-    return img_conv_2D(img,kernel,1,pad_type)
+    return img_conv_2D(img,kernel,stride,pad_type)
 
 
 # Function 11
-def sharp_img(img,pad_type='None'):
+def sharp_img(img,stride=1,pad_type='None'):
     """
         Returns sharpened version of passed image using laplacian kernel. Pad_types - zero_pad, wrap_pad, replicate_pad
     """
 
     kernel = kernel_bank['sharp']
-    return img_conv_2D(img,kernel,1,pad_type)
+    return img_conv_2D(img,kernel,stride,pad_type)
 
 
 # Function 12
-def gaussian_blur(img,key='gaussian_3x3',pad_type='None'):
+def gaussian_blur(img,key='gaussian_3x3',stride=1,pad_type='None'):
     """
         Returns blurred version of passed image. Gaussian kernel is used for blurring.
         Two gaussian kernels are present - 3x3, 5x5
     """
 
     kernel = kernel_bank[key]
-    return img_conv_2D(img,kernel,1,pad_type)
+    return img_conv_2D(img,kernel,stride,pad_type)
 
 
 # Function 13
-def detect_edge(img,key='edge_default',pad_type='None'):
+def detect_edge(img,key='edge_default',stride=1,pad_type='None'):
     """
         Returns edge detected version of passed image. Kernels available - default,
         laplacian(positive, negative), prewitt (horizontal, vertical), sobel(horizontal,vertical).
     """
 
     kernel = kernel_bank[key]
-    return img_conv_2D(img,kernel,1,pad_type)
+    return img_conv_2D(img,kernel,stride,pad_type)
+
 
 # Function 14
 def threshold_segment(img):
@@ -558,7 +562,7 @@ def histogram_equalization(img):
 # Function 25
 def linear_transform(img):
     """
-        Supports grayscale images only. y = f(x) = x
+        Transformation: y = f(x) = x
     """
 
     img_copy = np.copy(img)
@@ -568,7 +572,7 @@ def linear_transform(img):
 # Function 26
 def negative_transform(img):
     """
-        Supports only grayscale images. y = f(x) = 255-x
+        Transformation: y = f(x) = 255-x
     """
 
     img_copy = np.copy(img)
@@ -580,7 +584,7 @@ def negative_transform(img):
 # Function 27
 def log_transform(img,scale_factor=1):
     """
-        Supports only grayscale images. y = f(x) = scale_factor * log(x + 1)
+        Transformation: y = f(x) = scale_factor * log(x + 1)
     """
 
     img_copy = np.copy(img)
@@ -592,7 +596,7 @@ def log_transform(img,scale_factor=1):
 # Function 28
 def inverse_log_transform(img,scale_factor=1):
     """
-        Supports only grayscale images. y = f(x) = scale_factor * exp(x)
+        Transformation: y = f(x) = scale_factor * exp(x)
     """
 
     img_copy = np.copy(img)
@@ -604,7 +608,7 @@ def inverse_log_transform(img,scale_factor=1):
 # Function 29
 def gamma_transform(img,scale_factor=1,gamma=2.5):
     """
-        Supports only for grayscale images. y = f(x) = scale_factor * x ^ (1/gamma)
+        Transformation: y = f(x) = scale_factor * x ^ (1/gamma)
         Also known as power transformation.
     """
 
@@ -716,7 +720,7 @@ def hysterisis_canny(img,weak):
 
 
 # Function 34
-def canny_edge_detection(img,weak=50,high=70,low=30,kernel_size=7):
+def canny_edge_detection(img,weak=50,high=70,low=30,kernel_size=7,stride_gauss=1,stride_sobel=1,pad_type_gauss='zero_pad',pad_type_sobel='None'):
     """
         Performs canny edge detection. Processes followed:
             1. Reducing noise using gaussian filter
@@ -731,10 +735,10 @@ def canny_edge_detection(img,weak=50,high=70,low=30,kernel_size=7):
     img_copy = np.copy(img)
     gauss_kernel = gaussian_filter(kernel_size)
 
-    img_copy = img_conv_2D(img_copy,gauss_kernel,1,'zero_pad')
+    img_copy = img_conv_2D(img_copy,gauss_kernel,stride_gauss,pad_type_gauss)
 
-    img_horizontal = detect_edge(img_copy,'sobel_horizontal')
-    img_vertical = detect_edge(img_copy,'sobel_vertical')
+    img_horizontal = detect_edge(img_copy,'sobel_horizontal',stride_sobel,pad_type_sobel)
+    img_vertical = detect_edge(img_copy,'sobel_vertical',stride_sobel,pad_type_sobel)
 
     img_gradient_mag = np.sqrt(img_horizontal**2 + img_vertical**2)
     img_gradient_mag = img_gradient_mag * 255/img_gradient_mag.max()
